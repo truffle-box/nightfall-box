@@ -84,6 +84,9 @@ typings/
 # FuseBox cache
 .fusebox/
 
+# macOS local attributes
+.DS_store
+
 # DynamoDB Local files
 .dynamodb/
 
