@@ -1,0 +1,263 @@
+import "./aux-adder.code" as ADD
+import "LIBSNARK/sha256compression"
+import "PACKING/unpack128"
+
+def CONCAT128x216x216('field' a127...0, 'field' b215...0, 'field' c215...0)->(field560):
+	return a127...0, b215...0, c215...0
+
+def CONCAT216x216('field' a215...0, 'field' b215...0)->(field432):
+	return a215...0, b215...0
+
+//this function is needed because we've used * as a pcode wildcard and ORDEREDCONCAT needs a multiply doh!
+def MUL(field x, field y)->(field1):
+	return x*y
+
+//concatenate two words according to an order bit. If order=0, g is first.  If order=1, f is first
+def ORDEREDCONCAT216x216(field order, 'field' f215...0, 'field' g215...0) ->(field432):
+	{field r* = MUL(order,f*) + MUL(1-order, g*)
+	field s* = MUL(order,g*) + MUL(1-order, f*)}215...0
+	return r215...0,s215...0
+
+def shaPad432To512('field' a431...0)->(field512):
+	return a431...0, 1, 70....0, 1,1,0,1,1,0,0,0,0
+
+def shaPad216To512('field' a215...0)->(field512):
+	return a215...0, 1, 287....0, 1,1,0,1,1,0,0,0
+
+def shaPad128To512('field' a127...0)->(field512):
+	return a127...0, 1, 375....0, 1,0,0,0,0,0,0,0
+
+
+//inputs for main are:
+//Alice's original coins are C and D
+
+// C, the amount contained in coin z_C (private)
+// SkA Alice's secret key (private)
+// Sc the serial number for coin z_C (private)
+// c0b-c7b - the Merkle path for C (private)
+
+// D, the amount contained in coin z_d (private)
+// Sd the serial number for coin z_d (private)
+// d0b-d7b - the Merkle path for D (private)
+
+//Nc the nullifier for C (public)
+//Nd the nullifier for D (public)
+
+// Alice's new coins
+// E, the amount in coin z_e (private)
+// PkB Bob's public key (private)
+// Se the serial number for coin E (private)
+// Ze the z-coin (commitment) corresponding to E (public)
+
+// F, the amount in coin f_e (private)
+// Sf the serial number for coin F (private)
+// Zf the z-coin (commitment) corresponding to F (public)
+
+// R - the Merkle root (public)
+
+// Note - We truncate the 256 bit SHA hash down to 216 bits to make it fit better with our sha, which can only handle a single round.
+
+//Each field element passed to main() can be at most 128bits, to make use of unpack128() so 216 bit variables span two fields
+
+def main(private field C, 'field' £pSkA1...0, 'field' £pSc1...0, [private field c*bh, private field c*bl]0...31, private field orderC, private field D, 'field' £pSd1...0, [private field d*bh, private field d*bl]0...31, private field orderD, 'field' pNc1...0, 'field' pNd1...0, private field E, 'field' £pPkB1...0, 'field' £pSe1...0, 'field' pZe1...0, private field F, 'field' £pSf1...0, 'field' pZf1...0, 'field' pR1...0)->(field1):
+
+//Unpack the inputs of main() to 128 bits. We'll unpack each field to its own 128 bit string for simplicity for now. Later efficiencies could be made by grouping some inputs.
+
+	C127...0 = unpack128(C)
+
+	SkA255...128 = unpack128(pSkA1)
+	SkA127...0 = unpack128(pSkA0)
+
+	Sc255...128 = unpack128(pSc1)
+	Sc127...0 = unpack128(pSc0)
+
+	{c*b255...128 = unpack128(c*bh)}31...0
+	{c*b127...0 = unpack128(c*bl)}31...0
+
+	D127...0 = unpack128(D)
+
+	Sd255...128 = unpack128(pSd1)
+	Sd127...0 = unpack128(pSd0)
+
+	{d*b255...128 = unpack128(d*bh)}31...0
+	{d*b127...0 = unpack128(d*bl)}31...0
+
+	Nc255...128 = unpack128(pNc1)
+	Nc127...0 = unpack128(pNc0)
+
+	Nd255...128 = unpack128(pNd1)
+	Nd127...0 = unpack128(pNd0)
+
+	E127...0 = unpack128(E)
+
+	PkB255...128 = unpack128(pPkB1)
+	PkB127...0 = unpack128(pPkB0)
+
+	Se255...128 = unpack128(pSe1)
+	Se127...0 = unpack128(pSe0)
+
+	Ze255...128 = unpack128(pZe1)
+	Ze127...0 = unpack128(pZe0)
+
+	F127...0 = unpack128(F)
+
+	Sf255...128 = unpack128(pSf1)
+	Sf127...0 = unpack128(pSf0)
+
+	Zf255...128 = unpack128(pZf1)
+	Zf127...0 = unpack128(pZf0)
+
+	R255...128 = unpack128(pR1)
+	R127...0 = unpack128(pR0)
+
+	orderC127...0 = unpack128(orderC)
+	orderD127...0 = unpack128(orderD)
+
+//*************first we construct a proof that the nullifiers Nc and Nd are correct************
+	//concatenate Sc|Sk. The padding needs to be added to create a true hash
+
+		t431...0 = CONCAT216x216(Sc215...0, SkA215...0)
+
+		t511...0 = shaPad432To512(t431...0)
+
+		nc255...0 = sha256compression(t511...0)
+
+	//concatenate Sd|Sk. The padding needs to be added to create a true hash
+
+		t431...0 = CONCAT216x216(Sd215...0, SkA215...0)
+
+		t511...0 = shaPad432To512(t431...0)
+
+		nd255...0 = sha256compression(t511...0)
+
+// *********next, calculate Alice's public key from her private key: PkA = H(SkA) truncated to 64 bits.  This will be useful later
+
+		t511...0 = shaPad216To512(SkA215...0)
+
+		PkA255...0 = sha256compression(t511...0)
+
+//*************Prove that Zc and Zd are in the Merkle tree
+
+	// ***First calculate Zc = H(C|PkA|S)
+
+		d559...0 = CONCAT128x216x216(C127...0, PkA215...0, Sc215...0)
+
+		//this is too big to handle in a single sha round and our sha can't handle multiple rounds
+		//as a work-around, we will split d, hash both parts and then hash the result - remember to do this in Node too!
+
+		//first 432 bits (432 is 216*2 - a convenient number in our 216 bit scheme)
+		t511...0 = shaPad432To512(d431...0)
+		t255...0 = sha256compression(t511...0)
+			//remaining 128 bits
+		u511...0 = shaPad128To512(d559...432)
+		u255...0 = sha256compression(u511...0)
+			//then concat the results msb first
+		d431...0 = CONCAT216x216(u215...0, t215...0)
+			//and hash the result
+		d511...0 = shaPad432To512(d431...0)
+		t255...0 = sha256compression(d511...0)  //zc
+
+	//concat 1st through 31st siblings
+
+		{t431...0 = ORDEREDCONCAT216x216(orderC*, t215...0, c*b215...0)
+
+		t511...0 = shaPad432To512(t431...0)
+
+		t255...0 = sha256compression(t511...0)}31...1
+
+	// concat with the 32nd sibling. This should equal the root.
+
+		t431...0 = ORDEREDCONCAT216x216(orderC0, t215...0, c0b215...0)
+
+		t511...0 = shaPad432To512(t431...0)
+
+		rc255...0 = sha256compression(t511...0)
+
+	// ***Next calculate Zd = H(D|PkA|S)
+
+		d559...0 = CONCAT128x216x216(D127...0, PkA215...0, Sd215...0)
+
+		//this is too big to handle in a single sha round and our sha can't handle multiple rounds
+		//instead, we will split d, hash both parts and then hash the result - remember to do this in Node too!
+
+		//first 432 bits (432 is 216*2 - a convenient number in our 216 bit scheme)
+		t511...0 = shaPad432To512(d431...0)
+		t255...0 = sha256compression(t511...0)
+			//remaining 128 bits
+		u511...0 = shaPad128To512(d559...432)
+		u255...0 = sha256compression(u511...0)
+			//then concat the results msb first
+		d431...0 = CONCAT216x216(u215...0, t215...0)
+			//and hash the result
+		d511...0 = shaPad432To512(d431...0)
+		t255...0 = sha256compression(d511...0)  //zd
+
+	//concat 1st through 31st siblings
+
+		{t431...0 = ORDEREDCONCAT216x216(orderD*, t215...0, d*b215...0)
+
+		t511...0 = shaPad432To512(t431...0)
+
+		t255...0 = sha256compression(t511...0)}31...1
+
+	// concat with the 32nd sibling. This should equal the root.
+
+		t431...0 = ORDEREDCONCAT216x216(orderD0, t215...0, d0b215...0)
+
+		t511...0 = shaPad432To512(t431...0)
+
+		rd255...0 = sha256compression(t511...0)
+
+
+//*************Next up - prove that E is in Ze and F is in Zf
+
+	//work out ze = H(E|PkB|Se)
+
+	d559...0 = CONCAT128x216x216(E127...0, PkB215...0, Se215...0)
+	//first 432 bits (432 is 216*2 - a convenient number in our 216 bit scheme)
+	t511...0 = shaPad432To512(d431...0)
+	t255...0 = sha256compression(t511...0)
+		//remaining 128 bits
+	u511...0 = shaPad128To512(d559...432)
+	u255...0 = sha256compression(u511...0)
+		//then concat the results msb first
+	d431...0 = CONCAT216x216(u215...0, t215...0)
+		//and hash the result
+	d511...0 = shaPad432To512(d431...0)
+	ze255...0 = sha256compression(d511...0)
+
+	//and zf
+
+	d559...0 = CONCAT128x216x216(F127...0, PkA215...0, Sf215...0)
+	//first 432 bits (432 is 216*2 - a convenient number in our 216 bit scheme)
+	t511...0 = shaPad432To512(d431...0)
+	t255...0 = sha256compression(t511...0)
+		//remaining 128 bits
+	u511...0 = shaPad128To512(d559...432)
+	u255...0 = sha256compression(u511...0)
+		//then concat the results msb first
+	d431...0 = CONCAT216x216(u215...0, t215...0)
+		//and hash the result
+	d511...0 = shaPad432To512(d431...0)
+	zf255...0 = sha256compression(d511...0)
+
+//*************sum check C+D = E+F - we don't want anyone to create money.
+
+	t127...0 = ADD(C127...0, D127...0)
+
+	s127...0 = ADD(E127...0, F127...0)
+
+//**************Now test the proofs
+
+Nd==215...0==nd
+Nc==215...0==nc
+R==215...0==rd
+R==215...0==rc
+Ze==215...0==ze
+Zf==215...0==zf
+t==127...0==s
+C127==0 //overflow prevention
+D127==0
+E127==0
+F127==0
+return 1
