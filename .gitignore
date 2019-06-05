@@ -87,6 +87,9 @@ typings/
 # macOS local attributes
 .DS_store
 
+# markdown files
+*.md
+
 # DynamoDB Local files
 .dynamodb/
 
