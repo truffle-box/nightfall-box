@@ -29,6 +29,8 @@ i.e. DIRNAME_DIRPATH_REL: "/dirName/" is a relative path which (on the host mach
 ABS - absolute path
 */
 
+const { development } = require("../truffle-config");
+
 const props = {
   local: {
     HASHLENGTH: 27, // expected length of a hash in bytes
@@ -92,8 +94,8 @@ const props = {
         port: '80',
       },
       rpc: {
-        host: 'http://ganache',
-        port: '8545',
+        host: `http://${ development && development.host || "127.0.0.1" }`,
+        port: `${ development && development.port || 7545 }`,
       },
     },
   },
@@ -116,7 +118,7 @@ const getProps = () => {
   return props[env];
 };
 
-export default {
+module.exports = {
   setEnv,
   getProps,
 };
