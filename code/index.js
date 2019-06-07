@@ -473,6 +473,7 @@ async function runSetupAll(a) {
       const dir2 = dirs2[k][l];
 
       let files = await checkForOldFiles(dir2); // eslint-disable-line no-await-in-loop
+      if (files === false) continue;
       if (files !== []) {
         await rmOldFiles(dir2, files); // eslint-disable-line no-await-in-loop
         files = await readdirAsync(dir2); // eslint-disable-line no-await-in-loop
