@@ -13,7 +13,11 @@ Nightfall requires the following software to run:
     space (minimum - 12GB memory is better) or 16GB of memory with 512MB of swap. **The default
     values for Docker Desktop will NOT work. No, they really won't**.
 - [Node](https://nodejs.org/en/) (tested with 10.15.3) with npm and node-gyp
-  - If running macOS, install Xcode then run `xcode-select —install` to install these.
+  - If running macOS, install Xcode then run `xcode-select —install` to install command line tools.
+  - Note: Currently will not work with node v12. To check the node version, run `node --version`. If using mac/brew, then you may need to run `brew install node@10` and `brew link --overwrite node@10 --force`
+- [Python](https://www.python.org/downloads/)
+  - Be sure npm is setup to use v2.7 of python, not python3. To check the python version, run `python --version`
+  - You may need to run `npm config set python /usr/bin/python2.7` (or wherever your python 2 location is)
 
 ## Installation
 
