@@ -26,7 +26,8 @@
   },
   "devDependencies": {},
   "scripts": {
-    "setup": "yes | NODE_ENV=setup npx babel-node code/index.js"
+    "setup": "yes | NODE_ENV=setup npx babel-node code/index.js",
+    "setup-prompt": "NODE_ENV=setup npx babel-node code/index.js"
   },
   "author": "Cruz Molina",
   "license": "MIT"
