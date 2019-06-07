@@ -885,6 +885,7 @@ def shaPad216To512(field  a215, field  a214, field  a213, field  a212, field  a2
 
 //inputs for main are:
 
+// payTo, the public Ethereum address to which the burned tokens get paid
 // A, the asset identifier(hash) contained in coin z_A (public)
 // Alice's secret key SkA (private)
 // Sa the serial number for coin z_A (private)
@@ -894,9 +895,11 @@ def shaPad216To512(field  a215, field  a214, field  a213, field  a212, field  a2
 
 // Note - We truncate the 256 bit SHA hash down to 216 bits as it's a better fit with our coding scheme
 
-def main(field  A1, field  A0, private field  pSkA1, private field  pSkA0, private field  pSa1, private field  pSa0, private field c0bh, private field c0bl, private field c1bh, private field c1bl, private field c2bh, private field c2bl, private field c3bh, private field c3bl, private field c4bh, private field c4bl, private field c5bh, private field c5bl, private field c6bh, private field c6bl, private field c7bh, private field c7bl, private field c8bh, private field c8bl, private field c9bh, private field c9bl, private field c10bh, private field c10bl, private field c11bh, private field c11bl, private field c12bh, private field c12bl, private field c13bh, private field c13bl, private field c14bh, private field c14bl, private field c15bh, private field c15bl, private field c16bh, private field c16bl, private field c17bh, private field c17bl, private field c18bh, private field c18bl, private field c19bh, private field c19bl, private field c20bh, private field c20bl, private field c21bh, private field c21bl, private field c22bh, private field c22bl, private field c23bh, private field c23bl, private field c24bh, private field c24bl, private field c25bh, private field c25bl, private field c26bh, private field c26bl, private field c27bh, private field c27bl, private field c28bh, private field c28bl, private field c29bh, private field c29bl, private field c30bh, private field c30bl, private field c31bh, private field c31bl, private field order, field  pNa1, field  pNa0, field  pR1, field  pR0)->(field):
+def main(field  payTo1, field  payTo0, field  A1, field  A0, private field  pSkA1, private field  pSkA0, private field  pSa1, private field  pSa0, private field c0bh, private field c0bl, private field c1bh, private field c1bl, private field c2bh, private field c2bl, private field c3bh, private field c3bl, private field c4bh, private field c4bl, private field c5bh, private field c5bl, private field c6bh, private field c6bl, private field c7bh, private field c7bl, private field c8bh, private field c8bl, private field c9bh, private field c9bl, private field c10bh, private field c10bl, private field c11bh, private field c11bl, private field c12bh, private field c12bl, private field c13bh, private field c13bl, private field c14bh, private field c14bl, private field c15bh, private field c15bl, private field c16bh, private field c16bl, private field c17bh, private field c17bl, private field c18bh, private field c18bl, private field c19bh, private field c19bl, private field c20bh, private field c20bl, private field c21bh, private field c21bl, private field c22bh, private field c22bl, private field c23bh, private field c23bl, private field c24bh, private field c24bl, private field c25bh, private field c25bl, private field c26bh, private field c26bl, private field c27bh, private field c27bl, private field c28bh, private field c28bl, private field c29bh, private field c29bl, private field c30bh, private field c30bl, private field c31bh, private field c31bl, private field order, field  pNa1, field  pNa0, field  pR1, field  pR0)->(field):
 
 //Unpack the inputs of main() to 128 bits. We'll unpack each field to its own 128 bit string for simplicity for now. Later efficiencies could be made by grouping some inputs.
+
+// We don't need to unpack payTo, because it isn't part of a hash.
 
 A255, A254, A253, A252, A251, A250, A249, A248, A247, A246, A245, A244, A243, A242, A241, A240, A239, A238, A237, A236, A235, A234, A233, A232, A231, A230, A229, A228, A227, A226, A225, A224, A223, A222, A221, A220, A219, A218, A217, A216, A215, A214, A213, A212, A211, A210, A209, A208, A207, A206, A205, A204, A203, A202, A201, A200, A199, A198, A197, A196, A195, A194, A193, A192, A191, A190, A189, A188, A187, A186, A185, A184, A183, A182, A181, A180, A179, A178, A177, A176, A175, A174, A173, A172, A171, A170, A169, A168, A167, A166, A165, A164, A163, A162, A161, A160, A159, A158, A157, A156, A155, A154, A153, A152, A151, A150, A149, A148, A147, A146, A145, A144, A143, A142, A141, A140, A139, A138, A137, A136, A135, A134, A133, A132, A131, A130, A129, A128 = unpack128(A1)
 A127, A126, A125, A124, A123, A122, A121, A120, A119, A118, A117, A116, A115, A114, A113, A112, A111, A110, A109, A108, A107, A106, A105, A104, A103, A102, A101, A100, A99, A98, A97, A96, A95, A94, A93, A92, A91, A90, A89, A88, A87, A86, A85, A84, A83, A82, A81, A80, A79, A78, A77, A76, A75, A74, A73, A72, A71, A70, A69, A68, A67, A66, A65, A64, A63, A62, A61, A60, A59, A58, A57, A56, A55, A54, A53, A52, A51, A50, A49, A48, A47, A46, A45, A44, A43, A42, A41, A40, A39, A38, A37, A36, A35, A34, A33, A32, A31, A30, A29, A28, A27, A26, A25, A24, A23, A22, A21, A20, A19, A18, A17, A16, A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0 = unpack128(A0)
@@ -1799,5 +1802,9 @@ R213 == ra213
 R214 == ra214
 R215 == ra215
 
+//**************Intertwine payTo in the proof (trivially)
+
+	payTo1 * 1 == payTo1
+	payTo0 * 1 == payTo0
 
 	return 1
