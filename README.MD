@@ -41,23 +41,28 @@ First ensure you are in a new and empty directory.
     npm run setup
     ```
 
-5. Now, run the development console.
+5. Alternatively, you can generate specific verification keys and constraint files one at time using a prompt.
+    ```javascript
+    npm run setup-prompt
+    ```
+
+6. Now, run the development console.
     ```javascript
     truffle develop
     ```
 
-6. Compile and migrate the smart contracts. Note inside the development console we don't preface commands with `truffle`.
+7. Compile and migrate the smart contracts. Note inside the development console we don't preface commands with `truffle`.
     ```javascript
     compile
     migrate
     ```
     
-7. Execute the script provided for registering Zero Knowledge Proof verification keys on-chain. Note inside the development console we don't preface commands with `truffle`.
+8. Execute the script provided for registering Zero Knowledge Proof verification keys on-chain. Note inside the development console we don't preface commands with `truffle`.
     ```javascript
     exec scripts/registerVks.js
     ```
     
-8. Truffle can run tests written in Solidity or JavaScript against your smart contracts. Note the command varies slightly if you're in or outside of the development console.
+9. Truffle can run tests written in Solidity or JavaScript against your smart contracts. Note the command varies slightly if you're in or outside of the development console.
     ```javascript
     // inside the development console.
     test
