@@ -174,8 +174,10 @@ depth row  width  st#     end#
 
 
     require(roots[inputRoot] == inputRoot, "The input root has never been the root of the Merkle Tree");
-    require(ns[nc]==0, "The token has already been nullified!");
-    require(ns[nd]==0, "The token has already been nullified!");
+    require(nc != nd, "The nullifiers nc and nd must be different!");
+    require(ze != zf, "The token commitments ze and zf must be different!");
+    require(ns[nc] == 0, "The token has already been nullified!");
+    require(ns[nd] == 0, "The token has already been nullified!");
 
     ns[nc] = nc; //remember we spent it
     ns[nd] = nd; //remember we spent it
