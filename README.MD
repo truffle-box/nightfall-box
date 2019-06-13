@@ -36,7 +36,7 @@ First ensure you are in a new and empty directory.
 
 3. Start Docker.
     
-4. In the root project directory, we generate the keys and constraint files for our [Zero Knowledge Proofs](https://blog.decentriq.ch/zk-snarks-primer-part-one/). This is about 7GB and depends on randomness for security. This step can take a while, depending on your hardware. Before you begin, check once more you have provisioned enough memory for Docker.
+4. In the root project directory, we generate the keys and constraint files for our [Zero Knowledge Proofs](https://blog.decentriq.ch/zk-snarks-primer-part-one/). This is about 7GB and depends on randomness for security. **This step can take a while, depending on your hardware (1-3 hours)**. Before you begin, check once more you have provisioned enough memory for Docker.
     ```javascript
     npm run setup
     ```
