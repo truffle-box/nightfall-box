@@ -1,6 +1,6 @@
 # Nightfall Truffle Box
 
-The easiest way to get started on Nightfall.
+The easiest way to get started on [Nightfall](https://github.com/EYBlockchain/nightfall).
 
 ## Supported hardware & prerequisites
 
