@@ -20,7 +20,7 @@
     "node-docker-api": "^1.1.22",
     "safe-buffer": "^5.1.2",
     "truffle": "^5.0.20",
-    "truffle-contract": "^4.0.15",
+    "truffle-contract": "^4.0.21",
     "web3": "^1.0.0-beta.36",
     "yargs": "^13.2.4"
   },
