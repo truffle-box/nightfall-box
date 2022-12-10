@@ -11,7 +11,7 @@
     "body-parser": "^1.19.0",
     "cli-progress": "^2.1.1",
     "ethereumjs-abi": "^0.6.7",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "fs": "0.0.1-security",
     "hex-to-binary": "^1.0.1",
     "inquirer": "^6.3.1",
